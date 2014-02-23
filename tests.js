@@ -30,6 +30,51 @@ test("Append / get rules", function()
    ok(ls.rules[0] === rule, "Rules not set correctly.");
 });
 
+test("extractBrackets", function()
+{
+   var string = "foofoo(bar)foo";
+   var results = extractBrackets(string);
+
+   deepEqual(results.string, "foofoofoo");
+   deepEqual(results.contents, "bar");
+
+   string = "F(i=0.1)";
+   results = extractBrackets(string);
+
+   deepEqual(results.string, "F");
+   deepEqual(results.contents, "i=0.1");
+
+   string = "F";
+   results = extractBrackets(string);
+
+   deepEqual(results.string, "F");
+   deepEqual(results.contents, "");
+});
+
+test("spaces", function()
+{
+   var string = spaces(0);
+   deepEqual(string, "");
+
+   string = spaces(1);
+   deepEqual(string, " ");
+
+   string = spaces(2);
+   deepEqual(string, "  ");
+});
+
+test("pad", function()
+{
+   var string = pad("test", 5);
+   deepEqual(string, "test ");
+
+   string = pad("tt", 2);
+   deepEqual(string, "tt");
+
+   string = pad("test", 1);
+   deepEqual(string, "test");
+});
+
 test("Simple Generate", function()
 {
    var ls = new LSystem();
@@ -42,6 +87,19 @@ test("Simple Generate", function()
    ls.step();
 
    deepEqual(ls.string, "B");
+});
+
+test("Multiple Application of One Rule", function()
+{
+   var ls = new LSystem();
+   ls.setAxiom("aa")
+
+   var rule = new Rule("a", "b");
+   ls.addRule(rule);
+
+   ls.step();
+
+   deepEqual(ls.string, "bb");
 });
 
 test("Multi-char Generate", function()
@@ -134,5 +192,63 @@ test("Internet Test 2", function()
 
    ls.step();
    deepEqual(ls.string, "ABAABABA");
+});
+
+test("Attribute Rule", function()
+{
+   var rule = new Rule("F(i=0.1)", "F(i=0.2)");
+
+   deepEqual(rule.predecessor, "F");
+   deepEqual(rule.conditional, "i=0.1");
+});
+
+test("Attribute Arithmetic Rule", function()
+{
+   var rule = new Rule("F(i=0.1)", "F(i+0.2)");
+
+   deepEqual(rule.predecessor, "F");
+   deepEqual(rule.conditional, "i=0.1");
+
+   deepEqual(rule.successor, "F");
+   deepEqual(rule.attributeArithmetic, "i+0.2");
+});
+
+test("Attribute Test", function()
+{
+   var ls = new LSystem();
+   ls.setAxiom("F(i=0.1)");
+
+   var rule = new Rule("F(i=0.1)", "F(i=0.2)");
+   ls.addRule(rule);
+
+   ls.step();
+   deepEqual(ls.string, "F(i=0.2)");
+
+   ls.step();
+   deepEqual(ls.string, "F(i=0.2)");
+});
+
+test("Attribute GT Test", function()
+{
+   var ls = new LSystem();
+   ls.setAxiom("F(i=0.1)");
+
+   var rule = new Rule("F(i>0)", "F(i=0.2)");
+   ls.addRule(rule);
+
+   ls.step();
+   deepEqual(ls.string, "F(i=0.2)");
+});
+
+test("Conditional Add Test", function()
+{
+   var ls = new LSystem();
+   ls.setAxiom("F(i=0.1)");
+
+   var rule = new Rule("F(i>0)", "F(i+0.1)");
+   ls.addRule(rule);
+
+   ls.step();
+   deepEqual(ls.string, "F(i=0.2)");
 });
 
