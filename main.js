@@ -10,6 +10,24 @@ var maxY = 1.0;
 var rotationDelta = 1 * (3.14 / 360);
 var rotation = 0;
 
+var vertexShader;
+var fragmentShader;
+
+function load(path)
+{
+    var src;
+
+    $.ajax({
+        async: false,
+        url: path,
+        success: function(result) {
+            src = result;
+        }
+    });
+
+    return src;
+}
+
 function display()
 {
     var yAxis = vec3.fromValues(0, 1, 0);
@@ -169,40 +187,12 @@ function keyboard(ev)
 }
 
  /* Taken from http://learningwebgl.com/blog/?p=28 */
- function init_shader(id)
+ function init_shader(src, type)
  {
-    var element = document.getElementById(id);
-    if (!element)
-    {
-        return null;
-    }
-
-    var str = "";
-    var child = element.firstChild;
-    while (child)
-    {
-        if (child.nodeType == 3)
-        {
-            str += child.textContent;
-        }
-        child = child.nextSibling;
-    }
-
     var shader;
-    if (element.type == "x-shader/x-fragment")
-    {
-        shader = gl.createShader(gl.FRAGMENT_SHADER);
-    }
-    else if (element.type == "x-shader/x-vertex")
-    {
-        shader = gl.createShader(gl.VERTEX_SHADER);
-    }
-    else
-    {
-        return null;
-    }
+    shader = gl.createShader(type);
 
-    gl.shaderSource(shader, str);
+    gl.shaderSource(shader, src);
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
@@ -216,8 +206,10 @@ function keyboard(ev)
 
  function init_shader_program()
  {
-    var vs = init_shader("vshader");
-    var fs = init_shader("fshader");
+    var vertexShader = load("/media/l-system/vertex.glsl");
+    var vs = init_shader(vertexShader, gl.VERTEX_SHADER);
+    var fragmentShader = load("/media/l-system/fragment.glsl");
+    var fs = init_shader(fragmentShader, gl.FRAGMENT_SHADER);
 
     program = gl.createProgram();
     gl.attachShader(program, vs);
@@ -298,6 +290,12 @@ function main()
 }
 
 $(document).ready(function(){
-    main();
+    $.getScript("/media/l-system/gl-matrix.js", function(){
+        console.log("gl-matrix.js loaded");
+        $.getScript("/media/l-system/lsystem.js", function(){
+            console.log("lsystem.js loaded");
+            main();
+        });
+    });
 });
 
