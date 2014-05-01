@@ -297,3 +297,7 @@ function main()
     reshape();
 }
 
+$(document).ready(function(){
+    main();
+});
+
