@@ -13,21 +13,6 @@ var rotation = 0;
 var vertexShader;
 var fragmentShader;
 
-function load(path)
-{
-    var src;
-
-    $.ajax({
-        async: false,
-        url: path,
-        success: function(result) {
-            src = result;
-        }
-    });
-
-    return src;
-}
-
 function display()
 {
     var yAxis = vec3.fromValues(0, 1, 0);
@@ -206,9 +191,9 @@ function keyboard(ev)
 
  function init_shader_program()
  {
-    var vertexShader = load("/media/l-system/vertex.glsl");
+    var vertexShader = load_file("shaders/vertex.glsl");
     var vs = init_shader(vertexShader, gl.VERTEX_SHADER);
-    var fragmentShader = load("/media/l-system/fragment.glsl");
+    var fragmentShader = load_file("shaders/fragment.glsl");
     var fs = init_shader(fragmentShader, gl.FRAGMENT_SHADER);
 
     program = gl.createProgram();
@@ -279,6 +264,8 @@ function init_lsystem()
 
 function main()
 {
+    include("src/lsystem.js");
+
     gl = get_web_gl_context();
 
     init();
@@ -288,14 +275,4 @@ function main()
     init_geometry();
     reshape();
 }
-
-$(document).ready(function(){
-    $.getScript("/media/l-system/gl-matrix.js", function(){
-        console.log("gl-matrix.js loaded");
-        $.getScript("/media/l-system/lsystem.js", function(){
-            console.log("lsystem.js loaded");
-            main();
-        });
-    });
-});
 
