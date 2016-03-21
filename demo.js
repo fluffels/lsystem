@@ -2,11 +2,9 @@ var gl;
 var program;
 var vertexCount;
 var lsystem;
-var stepCount = 0;
-var maxSteps = 5;
-var angle = 60 * (3.14 / 360);
+var angle = 45 * (3.14 / 360);
 var distance = 0.05;
-var maxY = 1.0;
+var maxY = 0.01;
 var rotationDelta = 1 * (3.14 / 360);
 var rotation = 0;
 
@@ -32,7 +30,7 @@ function display() {
     var worldMatrix = mat4.create();
     mat4.rotate(worldMatrix, worldMatrix, rotation, yAxis);
 
-    var eye = vec3.fromValues(0, maxY / 2.0, -16);
+    var eye = vec3.fromValues(0, maxY / 2.0, maxY / 0.5);
     var center = vec3.fromValues(0, maxY / 2.0, 0);
     var up = vec3.fromValues(0, 1, 0);
 
@@ -112,41 +110,48 @@ function init_geometry() {
     var positionStack = [];
     var directionStack = [];
 
-    var zAxis = vec3.fromValues(0, 0, 1);
+    var position = vec4.fromValues(0, 0, 0, 1);
+    var direction = vec4.fromValues(0, 1.0, 0, 0);
+    vec4.normalize(direction, direction);
+    vec4.scale(direction, direction, distance);
 
-    var position = vec3.fromValues(0, 0, 0);
-    var direction = vec3.fromValues(0, 1.0, 0);
-    vec3.normalize(direction, direction);
-    vec3.scale(direction, direction, distance);
+    var positiveZRotation = mat4.create();
+    var negativeZRotation = mat4.create();
+    mat4.rotateZ(positiveZRotation, positiveZRotation, angle);
+    mat4.rotateZ(negativeZRotation, negativeZRotation, -angle);
 
-    var positiveZRotation = mat3.create();
-    var negativeZRotation = mat3.create();
-    positiveZRotation = mat3.rotate(positiveZRotation, positiveZRotation, angle, zAxis);
-    negativeZRotation = mat3.rotate(negativeZRotation, negativeZRotation, -angle, zAxis);
+    var positiveXRotation = mat4.create();
+    var negativeXRotation = mat4.create();
+    mat4.rotateX(positiveXRotation, positiveXRotation, angle);
+    mat4.rotateX(negativeXRotation, negativeXRotation, -angle);
+
     for (var i = 0; i < lsystem.string.length; i++) {
         if (lsystem.string.charAt(i) == "F") {
-            vertices = vertices.concat([position[0], position[1], position[2]]);
-            vec3.add(position, position, direction);
-            vertices = vertices.concat([position[0], position[1], position[2]]);
-            maxY = position[1];
-
+            vertices = vertices.concat([position[0], position[1], position[2], position[3]]);
+            vec4.add(position, position, direction);
+            vertices = vertices.concat([position[0], position[1], position[2], position[3]]);
+            if (position[1] > maxY) maxY = position[1];
             vertexCount += 2;
-        }
-        else if (lsystem.string.charAt(i) == "+") {
-            vec3.transformMat3(direction, direction, positiveZRotation);
-            vec3.normalize(direction, direction);
-            vec3.scale(direction, direction, distance);
-        }
-        else if (lsystem.string.charAt(i) == "-") {
-            vec3.transformMat3(direction, direction, negativeZRotation);
-            vec3.normalize(direction, direction);
-            vec3.scale(direction, direction, distance);
-        }
-        else if (lsystem.string.charAt(i) == "[") {
-            positionStack.push(vec3.clone(position));
-            directionStack.push(vec3.clone(direction));
-        }
-        else if (lsystem.string.charAt(i) == "]") {
+        } else if (lsystem.string.charAt(i) == "+") {
+            vec4.transformMat4(direction, direction, positiveZRotation);
+            vec4.normalize(direction, direction);
+            vec4.scale(direction, direction, distance);
+        } else if (lsystem.string.charAt(i) == "-") {
+            vec4.transformMat4(direction, direction, negativeZRotation);
+            vec4.normalize(direction, direction);
+            vec4.scale(direction, direction, distance);
+        } else if (lsystem.string.charAt(i) == "*") {
+            vec4.transformMat4(direction, direction, positiveXRotation);
+            vec4.normalize(direction, direction);
+            vec4.scale(direction, direction, distance);
+        } else if (lsystem.string.charAt(i) == "/") {
+            vec4.transformMat4(direction, direction, negativeXRotation);
+            vec4.normalize(direction, direction);
+            vec4.scale(direction, direction, distance);
+        } else if (lsystem.string.charAt(i) == "[") {
+            positionStack.push(vec4.clone(position));
+            directionStack.push(vec4.clone(direction));
+        } else if (lsystem.string.charAt(i) == "]") {
             position = positionStack.pop();
             direction = directionStack.pop();
         }
@@ -157,7 +162,7 @@ function init_geometry() {
     buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    gl.vertexAttribPointer(loc, 3, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(loc, 4, gl.FLOAT, gl.FALSE, 0, 0);
     gl.enableVertexAttribArray(loc);
 
     reshape();
@@ -224,7 +229,6 @@ function reshape() {
     gl.viewport(0, 0, newWidth, newHeight);
 
     var projectionMatrix = mat4.create();
-    //projectionMatrix = mat4.ortho(projectionMatrix, minX, maxX, 0, worldHeight, 0.0, 2.0);
     projectionMatrix = mat4.perspective(projectionMatrix, 90 * (3.14 / 360), newWidth / newHeight, 0.0, 1.0);
 
     var loc = findUniform("projection");
@@ -237,10 +241,9 @@ function init_lsystem() {
     lsystem = new LSystem();
     lsystem.setAxiom("F");
 
-    var rule = new Rule("F", "F[+F]F[-F]F");
+    var rule = new Rule("F", "F[+F][-F][*F][/F]F");
     lsystem.addRule(rule);
 
-    lsystem.step();
     lsystem.step();
     lsystem.step();
     lsystem.step();
