@@ -125,6 +125,7 @@ function init_geometry() {
     mat4.rotateX(positiveXRotation, positiveXRotation, angle);
     mat4.rotateX(negativeXRotation, negativeXRotation, -angle);
 
+    console.log("Starting geometry generation...");
     for (var i = 0; i < lsystem.string.length; i++) {
         if (lsystem.string.charAt(i) == "F") {
             vertices = vertices.concat([position[0], position[1], position[2], position[3]]);
@@ -156,6 +157,7 @@ function init_geometry() {
             direction = directionStack.pop();
         }
     }
+    console.log("Done.");
 
     var loc = findAttribute("position");
 
@@ -244,10 +246,11 @@ function init_lsystem() {
     var rule = new Rule("F", "F[+F]F[-F]F[/F]F[*F]");
     lsystem.addRule(rule);
 
+    console.log("Starting L-system construction...");
     lsystem.step();
     lsystem.step();
     lsystem.step();
-    lsystem.step();
+    console.log("Done.");
 }
 
 function main() {
