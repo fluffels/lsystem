@@ -67,9 +67,6 @@ function findUniform(name, value)
 {
     var loc = gl.getUniformLocation(program, name);
 
-    /* Yes, this diverges from the WebGL standard. No, I don't know why
-    this is different, but findAttribute is the same. No, I don't
-    really care. */
     if (loc == null)
     {
         console.error("Could not find uniform '" + name + "'.");
