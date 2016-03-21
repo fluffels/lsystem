@@ -59,7 +59,7 @@ function findAttribute(name) {
     return loc;
 }
 
-function findUniform(name, value) {
+function findUniform(name) {
     var loc = gl.getUniformLocation(program, name);
 
     if (loc == null) {
