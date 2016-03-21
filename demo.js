@@ -259,12 +259,6 @@ function main() {
 }
 
 $(document).ready(function () {
-    $.getScript("gl-matrix.js", function () {
-        console.log("gl-matrix.js loaded");
-        $.getScript("lsystem.js", function () {
-            console.log("lsystem.js loaded");
-            main();
-        });
-    });
+    main();
 });
 
