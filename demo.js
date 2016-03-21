@@ -180,9 +180,9 @@ function init_shader(src, type) {
 }
 
 function init_shader_program() {
-    var vertexShader = load("/media/l-system/vertex.glsl");
+    var vertexShader = load("vertex.glsl");
     var vs = init_shader(vertexShader, gl.VERTEX_SHADER);
-    var fragmentShader = load("/media/l-system/fragment.glsl");
+    var fragmentShader = load("fragment.glsl");
     var fs = init_shader(fragmentShader, gl.FRAGMENT_SHADER);
 
     program = gl.createProgram();
@@ -259,9 +259,9 @@ function main() {
 }
 
 $(document).ready(function () {
-    $.getScript("/media/l-system/gl-matrix.js", function () {
+    $.getScript("gl-matrix.js", function () {
         console.log("gl-matrix.js loaded");
-        $.getScript("/media/l-system/lsystem.js", function () {
+        $.getScript("lsystem.js", function () {
             console.log("lsystem.js loaded");
             main();
         });
