@@ -241,7 +241,7 @@ function init_lsystem() {
     lsystem = new LSystem();
     lsystem.setAxiom("F");
 
-    var rule = new Rule("F", "F[+F][-F][*F][/F]F");
+    var rule = new Rule("F", "F[+F]F[-F]F[/F]F[*F]");
     lsystem.addRule(rule);
 
     lsystem.step();
